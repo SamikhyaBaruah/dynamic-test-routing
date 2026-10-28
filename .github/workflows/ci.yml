@@ -1,0 +1,36 @@
+name: Dynamic Test Routing CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Select tests
+        id: sel
+        run: |
+          echo "tests=$(python scripts/select_tests.py)" >> "$GITHUB_OUTPUT"
+
+      - name: Show selected tests
+        run: |
+          echo "Selected tests: ${{ steps.sel.outputs.tests }}"
+
+      - name: Run selected tests
+        run: |
+          pytest ${{ steps.sel.outputs.tests }} -v
